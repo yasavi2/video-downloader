@@ -1,0 +1,11 @@
+# Netscape HTTP Cookie File
+# https://curl.haxx.se/rfc/cookie_spec.html
+# This is a generated file! Do not edit.
+
+.youtube.com	TRUE	/	TRUE	1798127344	PREF	f6=40000000&tz=Asia.Dushanbe&f7=100
+.youtube.com	TRUE	/	TRUE	1782576286	GPS	1
+.youtube.com	TRUE	/	TRUE	1798127341	VISITOR_INFO1_LIVE	whDBfAeTdp8
+.youtube.com	TRUE	/	TRUE	1798127341	VISITOR_PRIVACY_METADATA	CgJUShIEGgAgGQ%3D%3D
+.youtube.com	TRUE	/	TRUE	1798096995	__Secure-YNID	19.YT=WuQzSENcn1Fh8i58B-6Qlv06kQgGzT0OlmbKwTGK_NH_Rz4udK_t-RLT4q4jcJtb450IwVmzOIxxvV7R4xTT0gcila1z1gA9rCkSPbh6vRM0QOxyvmAX23XxzWvv26YYIuCYOP_IOqGIsFUCiyKiV8mHLviYJxohCErU9tYQEjqh11NVGwAVYXVNGGrZDWGS30gt6EySo8WdQeBx081vz5NuJbU_YhiO37CuODJMP5J8sl_yTaVb3GCihwxOdUoKXdgwXaqmqKx3hjPL0mausLn-5tvO1uZTVl34frD5TbUn__r3LGDrRemaR5kOp0HSAJHdFZ283zPaTUTz5UP0Fw
+.youtube.com	TRUE	/	TRUE	1798096995	__Secure-ROLLOUT_TOKEN	CL3K8uypiZ_l6QEQ78qnj5rqlAMYwfLryfGmlQM%3D
+.youtube.com	TRUE	/	TRUE	0	YSC	5Z-doyouxCk
