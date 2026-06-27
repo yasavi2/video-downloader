@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: video-downloader
+    runtime: docker
+    plan: free
+    autoDeployTrigger: commit

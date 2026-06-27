@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Загрузчик видео</title>
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#0f1220">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Загрузчик">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<style>
+  :root{--bg:#0f1220;--card:#181c2e;--card2:#1f2438;--line:#2a3050;--text:#eef1ff;--muted:#9aa3c7;--accent:#6c8cff;--accent2:#8a6cff;--ok:#37d39b}
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100vh;font-family:system-ui,"Segoe UI",Arial,sans-serif;color:var(--text);
+    background:radial-gradient(1000px 500px at 70% -10%,#23284a 0%,var(--bg) 55%);
+    display:flex;align-items:flex-start;justify-content:center;padding:26px 16px}
+  .wrap{width:100%;max-width:560px}
+  h1{font-size:24px;margin:0 0 4px}
+  .sub{color:var(--muted);font-size:13px;margin:0 0 20px}
+  .card{background:linear-gradient(180deg,var(--card),var(--card2));border:1px solid var(--line);
+    border-radius:18px;padding:20px;box-shadow:0 18px 44px rgba(0,0,0,.35)}
+  label{display:block;font-size:13px;color:var(--muted);margin:0 0 8px}
+  input[type=text]{width:100%;background:#11142a;border:1px solid var(--line);color:var(--text);
+    border-radius:12px;padding:14px;font-size:16px;outline:none}
+  input[type=text]:focus{border-color:var(--accent)}
+  .seg{display:flex;gap:8px;margin:14px 0 6px}
+  .seg button{flex:1;background:#11142a;border:1px solid var(--line);color:var(--muted);
+    border-radius:12px;padding:13px;font-size:14px;cursor:pointer}
+  .seg button.active{color:#fff;border-color:transparent;background:linear-gradient(135deg,var(--accent),var(--accent2))}
+  .go{width:100%;margin-top:16px;border:none;cursor:pointer;color:#fff;font-size:16px;font-weight:600;
+    padding:15px;border-radius:14px;background:linear-gradient(135deg,var(--accent),var(--accent2))}
+  .go:disabled{opacity:.55}
+  .panel{display:none;margin-top:16px;padding:16px;border-radius:14px;background:#11142a;border:1px solid var(--line)}
+  .ptitle{font-size:14px;margin:0 0 12px;word-break:break-word}
+  .bar{height:12px;background:#222848;border-radius:8px;overflow:hidden}
+  .fill{height:100%;width:0%;border-radius:8px;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .2s}
+  .fill.indet{width:35%!important;animation:slide 1.1s infinite ease-in-out}
+  @keyframes slide{0%{margin-left:-35%}100%{margin-left:100%}}
+  .meta{display:flex;justify-content:space-between;color:var(--muted);font-size:12px;margin-top:8px}
+  .done{display:none;margin-top:16px;padding:16px;border-radius:14px;background:rgba(55,211,155,.1);border:1px solid rgba(55,211,155,.4)}
+  .done a{display:inline-block;margin-top:10px;color:#fff;text-decoration:none;background:var(--ok);padding:12px 18px;border-radius:10px;font-weight:600}
+  .error{display:none;margin-top:16px;padding:14px;border-radius:12px;background:rgba(255,107,107,.1);border:1px solid rgba(255,107,107,.4);color:#ffd5d5;font-size:13px;word-break:break-word}
+  .hint{color:var(--muted);font-size:12px;margin-top:16px;line-height:1.5}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Загрузчик видео</h1>
+  <p class="sub">YouTube · Pinterest · VK · Instagram · TikTok и ещё 1800+ сайтов</p>
+  <div class="card">
+    <label for="url">Ссылка на видео</label>
+    <input id="url" type="text" placeholder="Вставьте ссылку…" autocomplete="off" spellcheck="false" inputmode="url">
+    <div class="seg" id="seg">
+      <button data-mode="video" class="active">Видео (MP4)</button>
+      <button data-mode="audio">Аудио (MP3)</button>
+    </div>
+    <button class="go" id="go">Скачать</button>
+    <div class="panel" id="panel">
+      <p class="ptitle" id="ptitle">Подготовка…</p>
+      <div class="bar"><div class="fill" id="fill"></div></div>
+      <div class="meta"><span id="pct"></span><span id="speed"></span><span id="eta"></span></div>
+    </div>
+    <div class="done" id="done">
+      <div id="donetitle" style="font-size:14px"></div>
+      <a id="dl" href="#">Сохранить в телефон</a>
+    </div>
+    <div class="error" id="error"></div>
+  </div>
+  <p class="hint">Файл скачивается на сервер и сразу отдаётся в загрузки телефона. Используйте только для личных целей и контента, на который у вас есть права.</p>
+</div>
+<script>
+  const $=id=>document.getElementById(id);
+  const seg=$("seg"),go=$("go"),urlInput=$("url"),panel=$("panel"),fill=$("fill"),ptitle=$("ptitle");
+  const pct=$("pct"),speedEl=$("speed"),etaEl=$("eta"),doneBox=$("done"),doneTitle=$("donetitle"),dl=$("dl"),errBox=$("error");
+  let mode="video",es=null,finished=false;
+  if("serviceWorker" in navigator){ try{ navigator.serviceWorker.register("/sw.js"); }catch(_){} }
+  seg.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;mode=b.dataset.mode;[...seg.children].forEach(x=>x.classList.toggle("active",x===b));});
+  urlInput.addEventListener("keydown",e=>{if(e.key==="Enter")go.click();});
+  function fmtSize(n){if(!n)return"";const u=["Б","КБ","МБ","ГБ"];let i=0;while(n>=1024&&i<u.length-1){n/=1024;i++;}return n.toFixed(1)+" "+u[i];}
+  function fmtEta(s){if(s==null)return"";s=Math.round(s);const m=Math.floor(s/60),ss=s%60;return "осталось "+(m?m+" мин ":"")+ss+" сек";}
+  function reset(){finished=false;errBox.style.display="none";doneBox.style.display="none";panel.style.display="block";ptitle.textContent="Подготовка…";fill.classList.add("indet");pct.textContent="";speedEl.textContent="";etaEl.textContent="";}
+  function cleanup(){if(es){es.close();es=null;}go.disabled=false;go.textContent="Скачать";}
+  function showError(m){errBox.textContent="Ошибка: "+(m||"что-то пошло не так");errBox.style.display="block";panel.style.display="none";}
+  function handle(d){
+    if(d.status==="downloading"){
+      if(d.title)ptitle.textContent=d.title;
+      if(d.percent!=null){fill.classList.remove("indet");fill.style.width=d.percent+"%";pct.textContent=d.percent+"%";}
+      else{fill.classList.add("indet");pct.textContent=fmtSize(d.downloaded);}
+      speedEl.textContent=d.speed?fmtSize(d.speed)+"/с":"";etaEl.textContent=fmtEta(d.eta);
+    }else if(d.status==="processing"){ptitle.textContent=(d.title||"Файл")+" — обработка…";fill.classList.add("indet");pct.textContent="";speedEl.textContent="";etaEl.textContent="";}
+    else if(d.status==="done"){finished=true;panel.style.display="none";doneTitle.textContent="Готово: "+(d.title||d.file);dl.href=d.url;dl.setAttribute("download","");doneBox.style.display="block";cleanup();
+      // авто-скачивание в телефон
+      try{ const a=document.createElement("a");a.href=d.url;a.download="";document.body.appendChild(a);a.click();a.remove(); }catch(_){}
+    }else if(d.status==="error"){finished=true;showError(d.message);cleanup();}
+  }
+  go.addEventListener("click",()=>{
+    const url=urlInput.value.trim();
+    if(!url){showError("Вставьте ссылку");return;}
+    reset();go.disabled=true;go.textContent="Скачиваю…";
+    const q=new URLSearchParams({url,mode});
+    es=new EventSource("/api/download?"+q.toString());
+    es.onmessage=e=>{try{handle(JSON.parse(e.data));}catch(_){}};
+    es.onerror=()=>{if(!finished){showError("Связь с сервером прервана");cleanup();}};
+  });
+</script>
+</body>
+</html>
