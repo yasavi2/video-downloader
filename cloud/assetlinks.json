@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "com.onrender.video_downloader_mfrc.twa",
+        "sha256_cert_fingerprints": ["12:DA:08:A5:1C:20:AF:74:28:78:44:4B:12:FC:A1:34:C5:20:08:53:12:FD:11:46:61:07:68:06:B8:7F:52:89"]
+      }
+    }]
